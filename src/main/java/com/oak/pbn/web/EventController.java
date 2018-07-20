@@ -42,13 +42,13 @@ public class EventController {
 	public String pushNotification(@RequestBody Map<String, Object> event) {
 		String eventType = (String) ((Map<String, Object>) event.get("event")).get("type");
 		if (!Arrays.asList(ignoredEventTypes).contains(eventType)) {
+			log.debug("Trying to send event: [{}].", event);
 			Pushbullet pushbullet = new Pushbullet(apiToken);
 			String body = freemarkerService.process("notification.ftl", event);
 			pushbullet.pushLink("Traccar event", body, notificationLink);
-			log.debug("Event sent: {}", event);
 			return "SENT";
 		}
-		log.debug("Ignoring event: {}", event);
+		log.debug("Ignoring event: [{}].", event);
 		return "IGNORE";
 	}
 }
