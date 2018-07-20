@@ -1,5 +1,6 @@
 package com.oak.pbn.web;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class EventController {
 	@Value("${notification.link}")
 	private String notificationLink;
 
+	@Value("${ignored.event.types:}")
+	private String[] ignoredEventTypes;
+
 	@Autowired
 	private FreemarkerService freemarkerService;
 
@@ -35,11 +39,16 @@ public class EventController {
 	}
 
 	@PostMapping
-	public String pushNotification(@RequestBody Map<String, Object> data) {
-		log.debug("Event received: {}", data);
-		Pushbullet pushbullet = new Pushbullet(apiToken);
-		String body = freemarkerService.process("notification.ftl", data);
-		pushbullet.pushLink("Traccar event", body, notificationLink);
-		return "SENT";
+	public String pushNotification(@RequestBody Map<String, Object> event) {
+		String eventType = (String) ((Map<String, Object>) event.get("event")).get("type");
+		if (!Arrays.asList(ignoredEventTypes).contains(eventType)) {
+			Pushbullet pushbullet = new Pushbullet(apiToken);
+			String body = freemarkerService.process("notification.ftl", event);
+			pushbullet.pushLink("Traccar event", body, notificationLink);
+			log.debug("Event sent: {}", event);
+			return "SENT";
+		}
+		log.debug("Ignore event: {}", event);
+		return "IGNORE";
 	}
 }
