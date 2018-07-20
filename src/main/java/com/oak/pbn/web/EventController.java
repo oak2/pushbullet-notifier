@@ -48,7 +48,7 @@ public class EventController {
 			log.debug("Event sent: {}", event);
 			return "SENT";
 		}
-		log.debug("Ignore event: {}", event);
+		log.debug("Ignoring event: {}", event);
 		return "IGNORE";
 	}
 }
